@@ -11,6 +11,7 @@ import PinAccess from './modal/PinAccess';
 import VerifyMail from './modal/VerifyMail';
 import { toast } from 'react-toastify';
 import { logout } from '../../controller/manageSession';
+import { SkeletonProfile, SectionLoader, SpinnerLoader } from '../common/Loader';
 
 const Account = () => {
   const navigate = useNavigate();
@@ -21,9 +22,12 @@ const Account = () => {
   const [purchaseDate, setPurchaseDate] = useState(null);
   const [whichOption, setWhichOption] = useState(1); // 1=Profile, 2=Boost, 3=Pin, 4=Settings, 5=Verify
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isLoadingClips, setIsLoadingClips] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoadingProfile(true);
       try {
         const data = await handleDetails();
         if (data?.status === 200) {
@@ -34,6 +38,8 @@ const Account = () => {
       } catch {
         await logout();
         navigate('/auth/login');
+      } finally {
+        setIsLoadingProfile(false);
       }
     };
     fetchData();
@@ -41,6 +47,7 @@ const Account = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoadingClips(true);
       try {
         const data = await getClips();
         if (data?.status === 200) {
@@ -57,6 +64,8 @@ const Account = () => {
       } catch {
         await logout();
         navigate('/auth/login');
+      } finally {
+        setIsLoadingClips(false);
       }
     };
     fetchData();
@@ -97,7 +106,11 @@ const Account = () => {
 
           <div className="relative flex flex-col items-center mb-6">
             <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-green-600">
-              {profile ? (
+              {isLoadingProfile ? (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <SpinnerLoader size="md" color="gray" />
+                </div>
+              ) : profile ? (
                 <img 
                   src={profile} 
                   alt="Profile" 
@@ -211,7 +224,9 @@ const Account = () => {
         <main className="flex-1 p-6">
           <div className="max-w-5xl mx-auto">
             <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
-              {whichOption === 1 ? <Profile data={data} setWhichOption={setWhichOption} /> :
+              {isLoadingProfile || isLoadingClips ? (
+                <SectionLoader text="Loading account information..." minHeight="500px" />
+              ) : whichOption === 1 ? <Profile data={data} setWhichOption={setWhichOption} /> :
                 whichOption === 2 ? <Boost data={clipData} accountPlan={accountPlan} purchaseDate={purchaseDate} /> :
                   whichOption === 3 ? <PinAccess data={data} setWhichOption={setWhichOption} /> :
                     whichOption === 4 ? <Settings data={data} /> :

@@ -7,11 +7,13 @@ import { resetClips, uploadProfilePic, removeProfilePic } from '../../../control
 import DeleteConfirmation from './DeleteConfirmation';
 import { logout, logoutAll } from '../../../controller/manageSession';
 import { FaLaptop, FaMobileAlt, FaTablet, FaDesktop, FaQuestionCircle, FaClock } from 'react-icons/fa';
+import { SpinnerLoader, ButtonLoader } from '../../common/Loader';
 
 const Settings = ({ data }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState(data.username || '');
   const [isUnique, setIsUnique] = useState(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -23,21 +25,27 @@ const Settings = ({ data }) => {
   const checkUsernameUnique = async (usernameToCheck) => {
     if (usernameToCheck === data.username || !usernameToCheck.trim()) {
       setIsUnique(null);
+      setIsCheckingUsername(false);
       return;
     }
     if (/\d/.test(usernameToCheck[0])) {
       toast.error("Username cannot start with a number");
+      setIsCheckingUsername(false);
       return;
     }
     if (usernameToCheck.length < 3 || usernameToCheck.length > 30) {
       toast.error("Username must be between 3 and 30 characters long");
+      setIsCheckingUsername(false);
       return;
     }
     const allowedPattern = /^[a-zA-Z0-9_-]+$/;
     if (!allowedPattern.test(usernameToCheck)) {
       toast.error("Username can only contain letters, numbers, underscores, and hyphens");
+      setIsCheckingUsername(false);
       return;
     }
+    
+    setIsCheckingUsername(true);
     try {
       const response = await checkUsername(usernameToCheck);
       if (response.status === 200) {
@@ -53,6 +61,8 @@ const Settings = ({ data }) => {
     } catch {
       await logout();
       navigate('/auth/login');
+    } finally {
+      setIsCheckingUsername(false);
     }
   };
 
@@ -224,12 +234,12 @@ const Settings = ({ data }) => {
             <div className="flex flex-wrap gap-2">
               <button onClick={handleProfilePicUpdate} disabled={isLoading}
                 className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                {isLoading ? 'Updating...' : 'Update Photo'}
+                {isLoading ? <ButtonLoader text="Updating..." color="white" /> : 'Update Photo'}
               </button>
               {profilePic && (
                 <button onClick={handleRemoveProfilePic} disabled={isLoading}
                   className={`px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  {isLoading ? 'Removing...' : 'Remove'}
+                  {isLoading ? <ButtonLoader text="Removing..." color="gray" /> : 'Remove'}
                 </button>
               )}
               <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
@@ -242,28 +252,38 @@ const Settings = ({ data }) => {
           <h3 className="text-lg font-medium mb-4">Username</h3>
           <div className="flex flex-col space-y-2">
             <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                value={username}
-                onChange={handleUsernameChange}
-                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                placeholder="Username"
-              />
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={handleUsernameChange}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 pr-10"
+                  placeholder="Username"
+                />
+                {isCheckingUsername && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <SpinnerLoader size="sm" color="blue" />
+                  </div>
+                )}
+              </div>
               <button
                 onClick={handleUpdateUsername}
-                disabled={!isUnique || isLoading || username === data.username}
+                disabled={!isUnique || isLoading || username === data.username || isCheckingUsername}
                 className={`px-4 py-2 rounded text-white ${
-                  isUnique && username !== data.username
+                  isUnique && username !== data.username && !isCheckingUsername
                     ? 'bg-blue-600 hover:bg-blue-700'
                     : 'bg-gray-400 cursor-not-allowed'
                 }`}>
-                {isLoading ? 'Updating...' : 'Update'}
+                {isLoading ? <ButtonLoader text="Updating..." color="white" /> : 'Update'}
               </button>
             </div>
-            {username !== data.username && username.trim() && (
+            {username !== data.username && username.trim() && !isCheckingUsername && (
               <p className={`text-sm ${isUnique ? 'text-green-600' : 'text-red-600'}`}>
                 {isUnique ? '✓ Username is available' : '✗ Username is already taken'}
               </p>
+            )}
+            {isCheckingUsername && (
+              <p className="text-sm text-gray-500">Checking availability...</p>
             )}
           </div>
         </div>
@@ -327,7 +347,7 @@ const Settings = ({ data }) => {
                 onClick={handleLogoutAllDevices}
                 disabled={isLoggingOut}
                 className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">
-                {isLoggingOut ? 'Logging out...' : 'Logout All Devices'}
+                {isLoggingOut ? <ButtonLoader text="Logging out..." color="white" /> : 'Logout All Devices'}
               </button>
             </div>
           </div>
@@ -342,7 +362,7 @@ const Settings = ({ data }) => {
                 onClick={handleResetClips}
                 disabled={isResetting}
                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">
-                {isResetting ? 'Resetting...' : 'Reset All Clips'}
+                {isResetting ? <ButtonLoader text="Resetting..." color="white" /> : 'Reset All Clips'}
               </button>
             </div>
           </div>

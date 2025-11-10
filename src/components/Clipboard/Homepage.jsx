@@ -12,6 +12,7 @@ import Filemodal from './modals/Filemodal.jsx';
 import TextShowModal from './modals/datamodal/TextShowModal.jsx';
 import ImageShowModal from './modals/datamodal/ImageShowModal.jsx';
 import FileShowModal from './modals/datamodal/FileShowModal.jsx';
+import { SkeletonGrid, SpinnerLoader } from '../common/Loader.jsx';
 
 const Homepage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,12 +22,15 @@ const Homepage = () => {
   const [data, setData] = useState({ text: [], images: [], files: [] });
   const [profile, setProfile] = useState(null);
   const [accountPlan, setAccountPlan] = useState(1);
+  const [isLoadingClips, setIsLoadingClips] = useState(true);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const navigate = useNavigate();
   const fabRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
+      setIsLoadingProfile(true);
       try {
         const data = await handleDetails();
         if (!isMounted) return;
@@ -37,6 +41,8 @@ const Homepage = () => {
       } catch (err) {
         await logout();
         navigate('/auth/login');
+      } finally {
+        if (isMounted) setIsLoadingProfile(false);
       }
     };
     fetchData();
@@ -48,6 +54,7 @@ const Homepage = () => {
   useEffect(() => {
     let isMounted = true;
     const fetchClipsData = async () => {
+      setIsLoadingClips(true);
       try {
         const data = await getClips();
         if (!isMounted) return;
@@ -65,6 +72,8 @@ const Homepage = () => {
       } catch (err) {
         await logout();
         navigate('/auth/login');
+      } finally {
+        if (isMounted) setIsLoadingClips(false);
       }
     };
     fetchClipsData();
@@ -109,7 +118,13 @@ const Homepage = () => {
                 className="h-10 w-10 rounded-full overflow-hidden ring-2 ring-blue-500 bg-white cursor-pointer hover:ring-indigo-500 transition-all duration-200 transform hover:scale-105"
                 onClick={() => setIsOpen(!isOpen)}
               >
-                <img src={profile || no_profile} alt="Profile" className="h-full w-full object-cover" />
+                {isLoadingProfile ? (
+                  <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                    <SpinnerLoader size="sm" color="gray" />
+                  </div>
+                ) : (
+                  <img src={profile || no_profile} alt="Profile" className="h-full w-full object-cover" />
+                )}
               </div>
 
               {isOpen && (
@@ -176,7 +191,9 @@ const Homepage = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow-lg rounded-lg min-h-[600px] p-6">
-          {option === 1 ? (
+          {isLoadingClips ? (
+            <SkeletonGrid count={8} />
+          ) : option === 1 ? (
             <TextShowModal data={data.text} />
           ) : option === 2 ? (
             <ImageShowModal data={data.images} />

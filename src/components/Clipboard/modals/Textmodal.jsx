@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { handleTextSave } from '../../../controller/modalController';
 import { useNavigate } from 'react-router-dom';
 import { findLimits } from '../../../utils/findLimits';
+import { ButtonLoader } from '../../common/Loader';
 
 const HandleCross = (setUploadModal, setUploadModalOption) => {
   setUploadModal(false);
@@ -15,6 +16,7 @@ const Textmodal = (props) => {
   const navigate = useNavigate();
   const [charCount, setCharCount] = useState(text_char_limit);
   const [data, setData] = useState({ body: '', head: '' });
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     if (charCount === text_char_limit) return toast.error('Text body cannot be empty');
@@ -23,10 +25,12 @@ const Textmodal = (props) => {
     if (data.body.trim() === '') return toast.error('Text body cannot be empty');
     if (data.head.length > 100) return toast.error('Heading exceeds maximum character limit');
 
+    setIsSaving(true);
     try {
       const response = await handleTextSave(data);
      
       if (response.status === 200) {
+        toast.success('Note saved successfully!');
         HandleCross(props.setUploadModal, props.setUploadModalOption);
         window.location.reload();
         return;
@@ -38,6 +42,8 @@ const Textmodal = (props) => {
     } catch {
       await logout();
       navigate('/auth/login');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -94,14 +100,14 @@ const Textmodal = (props) => {
           {/* ✅ Save button */}
           <button
             onClick={handleSave}
-            disabled={!data.body.trim() || !data.head.trim()}
+            disabled={!data.body.trim() || !data.head.trim() || isSaving}
             className={`w-full py-3 rounded-lg font-medium flex items-center justify-center space-x-2 ${
-              data.body.trim() && data.head.trim()
+              data.body.trim() && data.head.trim() && !isSaving
                 ? 'bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             } transition-all duration-200 transform hover:scale-[1.02]`}
           >
-            Save Note
+            {isSaving ? <ButtonLoader text="Saving..." color="white" /> : 'Save Note'}
           </button>
         </div>
       </div>
