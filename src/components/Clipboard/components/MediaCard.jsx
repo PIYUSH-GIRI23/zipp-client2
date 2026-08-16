@@ -5,7 +5,7 @@ import { removeMedia } from '../../../controller/modalController.js';
 import DeleteModal from '../modals/datamodal/DeleteModal.jsx';
 import fallbackImage from '../../../assets/fallbackImage.png';
 
-const MediaCard = ({ item, type }) => {
+const MediaCard = ({ item, type, refreshClips }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -136,7 +136,8 @@ const MediaCard = ({ item, type }) => {
 
       if (response.status === 200) {
         toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`);
-        window.location.reload();
+        if (refreshClips) refreshClips();
+        else window.location.reload();
         return;
       }
 

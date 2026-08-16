@@ -51,35 +51,31 @@ const Homepage = () => {
     };
   }, [navigate]);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchClipsData = async () => {
-      setIsLoadingClips(true);
-      try {
-        const data = await getClips();
-        if (!isMounted) return;
-        if (data?.status === 429) {
-          toast.error(data.data.error);
-          return;
-        }
-        if (data?.status === 200) {
-          setData({
-            text: data.data.userClips[0]?.text || [],
-            images: data.data.userClips[0]?.image || [],
-            files: data.data.userClips[0]?.file || [],
-          });
-        }
-      } catch (err) {
-        await logout();
-        navigate('/auth/login');
-      } finally {
-        if (isMounted) setIsLoadingClips(false);
+  const fetchClipsData = async (showLoading = true) => {
+    if (showLoading) setIsLoadingClips(true);
+    try {
+      const data = await getClips();
+      if (data?.status === 429) {
+        toast.error(data.data.error);
+        return;
       }
-    };
+      if (data?.status === 200) {
+        setData({
+          text: data.data.userClips[0]?.text || [],
+          images: data.data.userClips[0]?.image || [],
+          files: data.data.userClips[0]?.file || [],
+        });
+      }
+    } catch (err) {
+      await logout();
+      navigate('/auth/login');
+    } finally {
+      if (showLoading) setIsLoadingClips(false);
+    }
+  };
+
+  useEffect(() => {
     fetchClipsData();
-    return () => {
-      isMounted = false;
-    };
   }, [navigate]);
 
   useEffect(() => {
@@ -194,11 +190,11 @@ const Homepage = () => {
           {isLoadingClips ? (
             <SkeletonGrid count={8} />
           ) : option === 1 ? (
-            <TextShowModal data={data.text} />
+            <TextShowModal data={data.text} refreshClips={() => fetchClipsData(false)} />
           ) : option === 2 ? (
-            <ImageShowModal data={data.images} />
+            <ImageShowModal data={data.images} refreshClips={() => fetchClipsData(false)} />
           ) : option === 3 ? (
-            <FileShowModal data={data.files} />
+            <FileShowModal data={data.files} refreshClips={() => fetchClipsData(false)} />
           ) : null}
         </div>
       </div>

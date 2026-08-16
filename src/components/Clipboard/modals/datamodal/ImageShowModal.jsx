@@ -1,7 +1,7 @@
 import React from "react";
 import MediaCard from "../../components/MediaCard";
 
-const ImageShowModal = ({ data }) => {
+const ImageShowModal = ({ data, refreshClips }) => {
   if (!data || data.length === 0) {
     return (
       <div className="h-96 flex items-center justify-center text-gray-500">
@@ -17,7 +17,7 @@ const ImageShowModal = ({ data }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {[...data].reverse().map((image) => (
-        <MediaCard key={image.id} item={image} type="image" />
+        <MediaCard key={image.id} item={image} type="image" refreshClips={refreshClips} />
       ))}
     </div>
   );

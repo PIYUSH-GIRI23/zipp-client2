@@ -5,10 +5,14 @@ import { MdContentCopy, MdDelete, MdCheck } from "react-icons/md";
 import { deleteText } from "../../../../controller/modalController";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import DeleteModal from "./DeleteModal.jsx";
 
-const TextShowModal = ({ data }) => {
+const TextShowModal = ({ data, refreshClips }) => {
   const [copiedIndex, setCopiedIndex] = useState(null);
-  const [deletedIndex, setDeletedIndex] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [activeClipId, setActiveClipId] = useState(null);
+  const [activeClipTitle, setActiveClipTitle] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
   if (!data || data.length === 0) {
@@ -35,21 +39,25 @@ const TextShowModal = ({ data }) => {
     setTimeout(() => setCopiedIndex(null), 1500);
   };
 
-  const deleteClip = async (id, index) => {
+  const deleteClip = async (id) => {
     try {
+      setIsDeleting(true);
       const res = await deleteText(id);
       if (res?.status === 429) {
         toast.error(res.data.error);
         return;
       }
-      setDeletedIndex(index);
-      setTimeout(() => {
-        setDeletedIndex(null);
-        window.location.reload();
-      }, 1500);
-    } catch {
+      toast.success("Text clip deleted successfully");
+      if (refreshClips) refreshClips();
+      else window.location.reload();
+    } catch (err) {
       await logout();
       navigate("/auth/login");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setActiveClipId(null);
+      setActiveClipTitle('');
     }
   };
 
@@ -118,26 +126,33 @@ const TextShowModal = ({ data }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteClip(clip.id, index);
+                  setActiveClipId(clip.id);
+                  setActiveClipTitle(clip.head);
+                  setShowDeleteModal(true);
                 }}
-                className={`p-1.5 rounded-full hover:bg-red-50 transition-colors ${
-                  deletedIndex === index
-                    ? "text-red-600"
-                    : "text-gray-600 hover:text-red-600"
-                }`}
+                className="p-1.5 rounded-full hover:bg-red-50 transition-colors text-gray-600 hover:text-red-600"
+                title="Delete"
               >
-                {deletedIndex === index ? (
-                  <div className="animate-spin">
-                    <MdCheck size={18} />
-                  </div>
-                ) : (
-                  <MdDelete size={18} />
-                )}
+                <MdDelete size={18} />
               </button>
             </div>
           </div>
         </motion.div>
       ))}
+
+      {showDeleteModal && (
+        <DeleteModal
+          onConfirm={() => deleteClip(activeClipId)}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setActiveClipId(null);
+            setActiveClipTitle('');
+          }}
+          isLoading={isDeleting}
+          type="text"
+          title={activeClipTitle}
+        />
+      )}
     </div>
   );
 };
