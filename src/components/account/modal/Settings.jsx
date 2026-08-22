@@ -14,7 +14,10 @@ const Settings = ({ data }) => {
   const [username, setUsername] = useState(data.username || '');
   const [isUnique, setIsUnique] = useState(null);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
+  const [isUploadingProfilePic, setIsUploadingProfilePic] = useState(false);
+  const [isRemovingProfilePic, setIsRemovingProfilePic] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -87,7 +90,7 @@ const Settings = ({ data }) => {
         toast.error("Username can only contain letters, numbers, underscores, and hyphens");
         return;
       }
-      setIsLoading(true);
+      setIsUpdatingUsername(true);
       const response = await usernameUpdate(username);
       if (response.status === 200 && response.data.success) {
         toast.success('Username updated successfully');
@@ -103,7 +106,7 @@ const Settings = ({ data }) => {
       await logout();
       navigate('/auth/login');
     } finally {
-      setIsLoading(false);
+      setIsUpdatingUsername(false);
     }
   };
 
@@ -128,7 +131,7 @@ const Settings = ({ data }) => {
   };
 
   const handleDeleteAccount = async (password) => {
-    setIsLoading(true);
+    setIsDeletingAccount(true);
     try {
       const response = await deleteAccount(password);
       if (response.status === 200 && response.data.success) {
@@ -150,7 +153,7 @@ const Settings = ({ data }) => {
       await logout();
       navigate('/auth/login');
     } finally {
-      setIsLoading(false);
+      setIsDeletingAccount(false);
     }
   };
 
@@ -166,7 +169,7 @@ const Settings = ({ data }) => {
       return;
     }
     try {
-      setIsLoading(true);
+      setIsUploadingProfilePic(true);
       const formData = new FormData();
       formData.append('profilePic', file);
       const response = await uploadProfilePic(formData);
@@ -181,13 +184,13 @@ const Settings = ({ data }) => {
     } catch {
       toast.error('Failed to update profile picture');
     } finally {
-      setIsLoading(false);
+      setIsUploadingProfilePic(false);
     }
   };
 
   const handleRemoveProfilePic = async () => {
     try {
-      setIsLoading(true);
+      setIsRemovingProfilePic(true);
       const response = await removeProfilePic();
       if (response.status === 200) {
         setProfilePic(null);
@@ -198,7 +201,7 @@ const Settings = ({ data }) => {
     } catch {
       toast.error('Failed to remove profile picture');
     } finally {
-      setIsLoading(false);
+      setIsRemovingProfilePic(false);
     }
   };
 
@@ -232,14 +235,14 @@ const Settings = ({ data }) => {
               <img src={profilePic || no_profile} alt="Profile" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <button onClick={handleProfilePicUpdate} disabled={isLoading}
-                className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                {isLoading ? <ButtonLoader text="Updating..." color="white" /> : 'Update Photo'}
+              <button onClick={handleProfilePicUpdate} disabled={isUploadingProfilePic || isRemovingProfilePic}
+                className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${isUploadingProfilePic || isRemovingProfilePic ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                {isUploadingProfilePic ? <ButtonLoader text="Updating..." color="white" /> : 'Update Photo'}
               </button>
               {profilePic && (
-                <button onClick={handleRemoveProfilePic} disabled={isLoading}
-                  className={`px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  {isLoading ? <ButtonLoader text="Removing..." color="gray" /> : 'Remove'}
+                <button onClick={handleRemoveProfilePic} disabled={isUploadingProfilePic || isRemovingProfilePic}
+                  className={`px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 ${isUploadingProfilePic || isRemovingProfilePic ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  {isRemovingProfilePic ? <ButtonLoader text="Removing..." color="gray" /> : 'Remove'}
                 </button>
               )}
               <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
@@ -268,13 +271,13 @@ const Settings = ({ data }) => {
               </div>
               <button
                 onClick={handleUpdateUsername}
-                disabled={!isUnique || isLoading || username === data.username || isCheckingUsername}
+                disabled={!isUnique || isUpdatingUsername || username === data.username || isCheckingUsername}
                 className={`px-4 py-2 rounded text-white ${
-                  isUnique && username !== data.username && !isCheckingUsername
+                  isUnique && username !== data.username && !isCheckingUsername && !isUpdatingUsername
                     ? 'bg-blue-600 hover:bg-blue-700'
                     : 'bg-gray-400 cursor-not-allowed'
                 }`}>
-                {isLoading ? <ButtonLoader text="Updating..." color="white" /> : 'Update'}
+                {isUpdatingUsername ? <ButtonLoader text="Updating..." color="white" /> : 'Update'}
               </button>
             </div>
             {username !== data.username && username.trim() && !isCheckingUsername && (
@@ -386,7 +389,7 @@ const Settings = ({ data }) => {
           <DeleteConfirmation
             onConfirm={handleDeleteAccount}
             onCancel={() => setShowDeleteModal(false)}
-            isLoading={isLoading}
+            isLoading={isDeletingAccount}
           />
         )}
       </div>
