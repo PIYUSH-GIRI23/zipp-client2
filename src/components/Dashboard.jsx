@@ -1,13 +1,20 @@
-import { useState } from "react";
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import logo from "./../assets/logo.png";
 
 const Dashboard = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
-  const handleAuthNavigate = (path) => {
-    if(localStorage.getItem('zipp-accessToken') && localStorage.getItem('zipp-refreshToken')){
+  useEffect(() => {
+    if (localStorage.getItem('zipp-accessToken') || localStorage.getItem('zipp-refreshToken')) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleAuthNavigate = (path = "signup") => {
+    if (localStorage.getItem('zipp-accessToken') || localStorage.getItem('zipp-refreshToken')) {
       navigate('/clipboard');
       return;
     }
@@ -74,18 +81,29 @@ const Dashboard = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex space-x-4 tracking-wide">
-            <button
-              onClick={() => handleAuthNavigate("login")}
-              className="px-4 py-2 text-xs font-medium border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => handleAuthNavigate("signup")}
-              className="px-6 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md"
-            >
-              Get Started
-            </button>
+            {isLoggedIn ? (
+              <button
+                onClick={() => handleAuthNavigate("signup")}
+                className="px-6 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md cursor-pointer"
+              >
+                Go to Clipboard
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleAuthNavigate("login")}
+                  className="px-4 py-2 text-xs font-medium border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-all cursor-pointer"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => handleAuthNavigate("signup")}
+                  className="px-6 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md cursor-pointer"
+                >
+                  Get Started
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger */}
@@ -115,18 +133,29 @@ const Dashboard = () => {
               </button>
             ))}
             <div className="flex flex-col space-y-2">
+              {isLoggedIn ? (
                 <button
-                onClick={() => handleAuthNavigate("login")}
-                className="px-4 py-2 text-sm font-medium border border-indigo-500 text-indigo-500 rounded hover:bg-indigo-50"
+                  onClick={() => handleAuthNavigate("signup")}
+                  className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 cursor-pointer"
                 >
-                Login
+                  Go to Clipboard
                 </button>
-                <button
-                onClick={() => handleAuthNavigate("signup")}
-                className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700"
-                >
-                Get Started
-                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => handleAuthNavigate("login")}
+                    className="px-4 py-2 text-sm font-medium border border-indigo-500 text-indigo-500 rounded hover:bg-indigo-50 cursor-pointer"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => handleAuthNavigate("signup")}
+                    className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 cursor-pointer"
+                  >
+                    Get Started
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -141,9 +170,12 @@ const Dashboard = () => {
         <p className="text-lg sm:text-xl md:text-2xl leading-relaxed tracking-wide max-w-2xl drop-shadow">
           Zipp saves text, code, links, and images — always ready when you need them.
         </p>
-        <Link to="/auth/signup" className="mt-6 px-8 py-4 text-lg md:text-xl font-semibold bg-white text-slate-800 rounded-lg hover:scale-105 transform transition-all duration-300 shadow-lg hover:shadow-xl">
-          Get Started
-        </Link>
+        <button
+          onClick={() => handleAuthNavigate("signup")}
+          className="mt-6 px-8 py-4 text-lg md:text-xl font-semibold bg-white text-slate-800 rounded-lg hover:scale-105 transform transition-all duration-300 shadow-lg hover:shadow-xl cursor-pointer"
+        >
+          {isLoggedIn ? 'Go to Clipboard →' : 'Get Started'}
+        </button>
       </div>
 
       {/* Features Section */}
@@ -211,9 +243,12 @@ const Dashboard = () => {
         <p className="max-w-2xl mx-auto mb-6 text-lg md:text-xl drop-shadow">
           Start using Zipp today and never lose track of what you copy again. Experience seamless sync, organization, and security across all your devices.
         </p>
-        <Link to="/auth/signup" className="px-8 py-4 text-lg font-semibold bg-white text-slate-800 rounded-lg hover:scale-105 transform transition-all duration-300 shadow-lg hover:shadow-xl">
-          Get Started
-        </Link>
+        <button
+          onClick={() => handleAuthNavigate("signup")}
+          className="px-8 py-4 text-lg font-semibold bg-white text-slate-800 rounded-lg hover:scale-105 transform transition-all duration-300 shadow-lg hover:shadow-xl cursor-pointer"
+        >
+          {isLoggedIn ? 'Go to Clipboard →' : 'Get Started'}
+        </button>
       </div>
 
       {/* Footer */}
