@@ -19,7 +19,10 @@ export const handleSignup = async (formdata) => {
     });
 
     return {status: response.status, data: await response.json()};
-  } 
+  } catch {
+    return {status: 500, data: {message: "Internal Server Error"}};
+  }
+}; 
 export const sendSignupOtp = async (email, confirmEmail) => {
   try {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
