@@ -22,6 +22,7 @@
 - ⚡ **Vite-Powered React App** — Lightning-fast development and optimized builds  
 - 🎨 **Tailwind CSS** — Fully responsive and modern UI styling  
 - 🔐 **Authentication Integration** — Securely connects with ZIPP Auth microservice  
+- 📩 **Enhanced Manual Signup** — Includes Confirm Email validation and a 6-digit OTP verification screen with countdown timer  
 - 📋 **Clipboard System** — Upload, manage, and view media/text clips easily  
 - 🧩 **Modular Architecture** — Cleanly separated components and controllers  
 - 🧠 **Smart Plan Limits** — Real-time limit tracking synced with backend services  

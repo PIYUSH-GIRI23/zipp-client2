@@ -20,8 +20,49 @@ export const handleSignup = async (formdata) => {
 
     return {status: response.status, data: await response.json()};
   } 
-  catch {
-    return {status: 500, data: {message: "Internal Server Error"}};
+export const sendSignupOtp = async (email, confirmEmail) => {
+  try {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const sendOtpRoute = import.meta.env.VITE_SEND_SIGNUP_OTP || '/auth/send-signup-otp';
+    if (!backendUrl) {
+      throw new Error("Environment variable VITE_BACKEND_URL is not defined");
+    }
+
+    const URL = `${backendUrl}${sendOtpRoute}`;
+    const response = await fetch(URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, confirmEmail }),
+    });
+
+    return { status: response.status, data: await response.json() };
+  } catch {
+    return { status: 500, data: { message: "Internal Server Error" } };
+  }
+};
+
+export const verifySignupOtp = async (email, otp) => {
+  try {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const verifyOtpRoute = import.meta.env.VITE_VERIFY_SIGNUP_OTP || '/auth/verify-signup-otp';
+    if (!backendUrl) {
+      throw new Error("Environment variable VITE_BACKEND_URL is not defined");
+    }
+
+    const URL = `${backendUrl}${verifyOtpRoute}`;
+    const response = await fetch(URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, otp }),
+    });
+
+    return { status: response.status, data: await response.json() };
+  } catch {
+    return { status: 500, data: { message: "Internal Server Error" } };
   }
 };
 
